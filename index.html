@@ -5,8 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Professional Payroll System - Java Institute</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        @media print { .no-print { display: none; } body { background: white; } .print-border { border: 2px solid #333 !important; } }
+        /* Print and PDF Optimization */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; padding: 0; margin: 0; }
+            .print-container { 
+                width: 210mm; /* A4 Width */
+                min-height: 297mm; /* A4 Height */
+                padding: 15mm !important;
+                margin: 0 auto;
+                border: none !important;
+                box-shadow: none !important;
+            }
+        }
+        
+        /* Ensure PDF content is visible and styled properly */
+        #pdfContent {
+            background: white;
+            padding: 20px;
+        }
     </style>
 </head>
 <body class="bg-slate-100 p-4 md:p-10 font-sans text-gray-800">
@@ -58,101 +77,154 @@
         <button onclick="generateSalary()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-lg transition shadow-lg uppercase tracking-widest">Generate Official Pay Slip</button>
     </div>
 
-    <div id="paySlip" class="max-w-3xl mx-auto border-2 border-gray-800 p-10 bg-white shadow-sm relative hidden print-border">
-        <div class="text-center mb-6">
-            <h1 class="text-2xl font-black tracking-tighter text-gray-900 mb-1 uppercase">Java Institute Holdings (Pvt) Ltd</h1>
-            <p class="italic text-[10px] font-bold text-gray-500 tracking-[0.3em] uppercase">Heart-Driven Leadership</p>
-            <div class="w-full h-[1.5px] bg-gray-800 mx-auto mt-4"></div>
-            <h2 class="text-lg font-bold mt-4 underline underline-offset-4 uppercase tracking-[0.2em]">Pay Slip</h2>
-        </div>
-
-        <div class="flex justify-between mb-8 text-sm">
-            <div>
-                <p><strong>Employee Name:</strong> <span id="outName" class="ml-2 uppercase font-semibold">---</span></p>
-                <p><strong>Month:</strong> <span id="outMonth" class="ml-2 font-bold border-b border-black">---</span></p>
+    <div id="paySlip" class="max-w-3xl mx-auto border-2 border-gray-800 bg-white shadow-sm hidden print-container">
+        <div id="pdfContent" class="p-8">
+            <div class="text-center mb-6">
+                <h1 class="text-2xl font-black tracking-tighter text-gray-900 mb-1 uppercase">Java Institute Holdings (Pvt) Ltd</h1>
+                <p class="italic text-[10px] font-bold text-gray-500 tracking-[0.3em] uppercase">Heart-Driven Leadership</p>
+                <div class="w-full h-[1.5px] bg-gray-800 mx-auto mt-4"></div>
+                <h2 class="text-lg font-bold mt-4 underline underline-offset-4 uppercase tracking-[0.2em]">Pay Slip</h2>
             </div>
-            <div class="text-right text-[10px] text-gray-500 font-bold uppercase">
-                <p>Work Cycle: 10th to 10th</p>
-                <p>Standard Days: 25</p>
-            </div>
-        </div>
 
-        <div class="mb-6">
-            <h3 class="font-bold text-[11px] mb-2 uppercase tracking-wider border-l-4 border-black pl-2">Earnings Components:</h3>
-            <table class="w-full border-collapse border border-gray-800">
-                <thead>
-                    <tr class="bg-gray-100 text-[11px] border-b border-gray-800">
-                        <th class="p-2 text-left border-r border-gray-800 w-2/3">Component</th>
-                        <th class="p-2 text-right">Amount (LKR)</th>
-                    </tr>
-                </thead>
-                <tbody id="earningsBody" class="text-[13px] font-medium"></tbody>
-                <tfoot>
-                    <tr class="font-bold bg-gray-50 border-t border-gray-800">
-                        <td class="p-2 text-left border-r border-gray-800 uppercase">Gross Salary</td>
-                        <td class="p-2 text-right" id="grossSalary">0.00</td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-
-        <div class="mb-8">
-            <h3 class="font-bold text-[11px] mb-2 uppercase tracking-wider border-l-4 border-red-600 pl-2 text-red-700">Deductions & Contributions:</h3>
-            <table class="w-full border-collapse border border-gray-800">
-                <thead>
-                    <tr class="bg-gray-100 text-[11px] border-b border-gray-800">
-                        <th class="p-2 text-left border-r border-gray-800 w-2/3">Component</th>
-                        <th class="p-2 text-right">Amount (LKR)</th>
-                    </tr>
-                </thead>
-                <tbody id="deductionsBody" class="text-[13px]"></tbody>
-                <tfoot>
-                    <tr class="font-black text-lg bg-gray-50 border-t-2 border-gray-800">
-                        <td class="p-3 text-left border-r border-gray-800 uppercase">Net Salary (Transferable)</td>
-                        <td class="p-3 text-right text-blue-800" id="netSalaryDisplay">0.00</td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-
-        <div class="mt-4 border-t-2 border-gray-300 pt-6">
-            <h3 class="font-black text-[10px] uppercase tracking-widest mb-3 text-gray-900 underline">Salary Terms & Deduction Policy</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-[10px] leading-relaxed text-gray-700">
-                <div class="bg-gray-50 p-3 rounded">
-                    <p class="font-bold text-black mb-1 uppercase">1. Attendance Bonus (10%):</p>
-                    <p>Awarded for perfect attendance. Any recorded 'No-Pay' day (beyond the 2-day paid leave limit) results in a total forfeiture (100% loss) of this bonus component.</p>
+            <div class="flex justify-between mb-8 text-sm">
+                <div>
+                    <p><strong>Employee Name:</strong> <span id="outName" class="ml-2 uppercase font-semibold">---</span></p>
+                    <p><strong>Month:</strong> <span id="outMonth" class="ml-2 font-bold border-b border-black">---</span></p>
                 </div>
-                <div class="bg-gray-50 p-3 rounded">
-                    <p class="font-bold text-black mb-1 uppercase">2. Attendance Allowance (5%):</p>
-                    <p>This component is pro-rated. Each 'No-Pay' day results in a deduction calculated as (Total Allowance / 25 working days).</p>
-                </div>
-                <div class="bg-gray-50 p-3 rounded">
-                    <p class="font-bold text-black mb-1 uppercase">3. Basic Salary (40%):</p>
-                    <p>The Basic Salary is protected and never subjected to attendance-based deductions, ensuring consistency in EPF/ETF contributions.</p>
-                </div>
-                <div class="bg-gray-50 p-3 rounded">
-                    <p class="font-bold text-black mb-1 uppercase">4. Fixed Allowances:</p>
-                    <p>Allowances for Transport (15%), Housing (10%), Medical (10%), COL (5%), and Tech (5%) are fixed and not affected by minor attendance shifts.</p>
+                <div class="text-right text-[10px] text-gray-500 font-bold uppercase">
+                    <p>Work Cycle: 10th to 10th</p>
+                    <p>Standard Days: 25</p>
                 </div>
             </div>
+
+            <div class="mb-6">
+                <h3 class="font-bold text-[11px] mb-2 uppercase tracking-wider border-l-4 border-black pl-2">Earnings Components:</h3>
+                <table class="w-full border-collapse border border-gray-800">
+                    <thead>
+                        <tr class="bg-gray-100 text-[11px] border-b border-gray-800">
+                            <th class="p-2 text-left border-r border-gray-800 w-2/3">Component</th>
+                            <th class="p-2 text-right">Amount (LKR)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="earningsBody" class="text-[13px] font-medium"></tbody>
+                    <tfoot>
+                        <tr class="font-bold bg-gray-50 border-t border-gray-800">
+                            <td class="p-2 text-left border-r border-gray-800 uppercase">Gross Salary</td>
+                            <td class="p-2 text-right" id="grossSalary">0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="mb-8">
+                <h3 class="font-bold text-[11px] mb-2 uppercase tracking-wider border-l-4 border-red-600 pl-2 text-red-700">Deductions & Contributions:</h3>
+                <table class="w-full border-collapse border border-gray-800">
+                    <thead>
+                        <tr class="bg-gray-100 text-[11px] border-b border-gray-800">
+                            <th class="p-2 text-left border-r border-gray-800 w-2/3">Component</th>
+                            <th class="p-2 text-right">Amount (LKR)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="deductionsBody" class="text-[13px]"></tbody>
+                    <tfoot>
+                        <tr class="font-black text-lg bg-gray-50 border-t-2 border-gray-800">
+                            <td class="p-3 text-left border-r border-gray-800 uppercase">Net Salary (Transferable)</td>
+                            <td class="p-3 text-right text-blue-800" id="netSalaryDisplay">0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="mt-4 border-t-2 border-gray-300 pt-6">
+                <h3 class="font-black text-[10px] uppercase tracking-widest mb-3 text-gray-900 underline italic">Transparency & Policy Summary</h3>
+                <div class="grid grid-cols-2 gap-4 text-[9px] text-gray-700 leading-tight">
+                    <div class="bg-gray-50 p-2 rounded border border-gray-100">
+                        <p class="font-bold text-black uppercase mb-1">Attendance Bonus (10%)</p>
+                        <p>Lost completely if No-Pay days > 0. Fixed Basic (40%) is protected from this deduction.</p>
+                    </div>
+                    <div class="bg-gray-50 p-2 rounded border border-gray-100">
+                        <p class="font-bold text-black uppercase mb-1">Attendance Allowance (5%)</p>
+                        <p>Pro-rated deduction: (Total Allowance / 25) per No-Pay day.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-16 flex justify-between px-6 pb-2">
+                <div class="text-center">
+                    <div class="w-48 border-b border-black mb-1"></div>
+                    <p class="text-[10px] font-bold uppercase tracking-widest" id="signName">Employee Signature</p>
+                </div>
+                <div class="text-center">
+                    <p class="font-bold text-sm italic">Manager - HR</p>
+                    <p class="text-[9px] text-gray-500 uppercase">Java Institute Holdings (Pvt) Ltd</p>
+                </div>
+            </div>
         </div>
 
-        <div class="mt-16 flex justify-between px-6 pb-2">
-            <div class="text-center">
-                <div class="w-48 border-b border-black mb-1"></div>
-                <p class="text-[10px] font-bold uppercase tracking-widest" id="signName">Employee Signature</p>
-            </div>
-            <div class="text-center">
-                <p class="font-bold text-sm italic">Manager - HR</p>
-                <p class="text-[9px] text-gray-500 uppercase">Java Institute Holdings (Pvt) Ltd</p>
-            </div>
+        <div class="flex gap-4 justify-center py-6 bg-slate-50 border-t no-print">
+            <button onclick="downloadPDF()" class="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 shadow-md">
+                Download PDF
+            </button>
+            <button onclick="window.print()" class="bg-blue-900 text-white font-bold py-2 px-6 rounded-lg hover:bg-black shadow-md">
+                Print Page
+            </button>
         </div>
     </div>
+<div class="max-w-5xl mx-auto mt-8 border-t-2 border-gray-300 pt-8 no-print">
+    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <h3 class="text-lg font-black uppercase tracking-widest mb-6 text-gray-900 border-b-2 border-blue-600 inline-block pb-1">
+            Salary Terms & Deduction Policy
+        </h3>
 
-    <button onclick="window.print()" class="no-print mt-6 bg-blue-900 text-white font-bold py-3 px-12 rounded-lg mx-auto block hover:bg-black transition-all shadow-md">
-        Print Official Pay Slip
-    </button>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <div>
+                <h4 class="text-xs font-bold text-blue-800 uppercase mb-3 tracking-tighter italic">1. General Terms & Conditions</h4>
+                <ul class="space-y-3 text-[12px] text-gray-700 leading-relaxed">
+                    <li class="flex items-start">
+                        <span class="mr-2 font-bold text-blue-600">•</span>
+                        <span><strong>Agreed Salary Structure:</strong> The total agreed salary is composed of Basic Salary (40%), Fixed Allowances (45%), and Attendance Incentives (15%).</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="mr-2 font-bold text-blue-600">•</span>
+                        <span><strong>EPF/ETF Contributions:</strong> Statutory contributions (EPF 8%/12% and ETF 3%) are calculated strictly based on the 40% Basic Salary to ensure long-term financial security.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="mr-2 font-bold text-blue-600">•</span>
+                        <span><strong>Paid Leave Policy:</strong> Employees are entitled to a maximum of 2 approved paid leaves per month. Any absence beyond this limit is categorized as "No-Pay."</span>
+                    </li>
+                </ul>
+            </div>
 
+            <div class="bg-slate-50 p-5 rounded-lg border border-slate-200">
+                <h4 class="text-xs font-bold text-red-700 uppercase mb-3 tracking-tighter italic">2. Deduction Calculation Logic</h4>
+                
+                <div class="space-y-4">
+                    <div class="border-l-4 border-red-500 pl-3">
+                        <p class="text-[11px] font-black text-gray-900 uppercase">Attendance Bonus (10%) - "All or Nothing"</p>
+                        <p class="text-[11px] text-gray-600 italic">This is a reward for perfect attendance. Recording even one (1) "No-Pay" day results in the total forfeiture of this 10% component.</p>
+                    </div>
+
+                    <div class="border-l-4 border-orange-400 pl-3">
+                        <p class="text-[11px] font-black text-gray-900 uppercase">Attendance Allowance (5%) - "Pro-Rata"</p>
+                        <p class="text-[11px] text-gray-600 italic">Deducted proportionally based on the number of No-Pay days. Formula: (Total Allowance / 25 Working Days) × Number of No-Pay Days.</p>
+                    </div>
+
+                    <div class="border-l-4 border-gray-400 pl-3">
+                        <p class="text-[11px] font-black text-gray-900 uppercase">Basic & Fixed Components</p>
+                        <p class="text-[11px] text-gray-600 italic">The Basic Salary (40%) and Fixed Allowances (45%) remain protected and are not subject to attendance-based penalties.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 p-3 bg-blue-50 rounded border border-blue-100">
+            <p class="text-[10px] text-blue-800 font-medium leading-tight italic">
+                <strong>Confidentiality Note:</strong> This summary is provided for transparency purposes. For further clarifications regarding your specific payroll adjustments, please contact the HR Department.
+            </p>
+        </div>
+    </div>
+</div>
     <script>
         const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -166,7 +238,6 @@
             const currentIdx = months.indexOf(currentMonthInput);
             const salaryMonthName = months[currentIdx === 0 ? 11 : currentIdx - 1];
 
-            // Calculations
             const basic = agreed * 0.40;
             const attendAlw = agreed * 0.05;
             const attendBon = agreed * 0.10;
@@ -176,79 +247,75 @@
             const col = agreed * 0.05;
             const tech = agreed * 0.05;
 
-            // NEW LOGIC
-            let bonusDeduction = 0;
-            let allowanceDeduction = 0;
-            if (noPay > 0) {
-                bonusDeduction = attendBon; // All or nothing
-                allowanceDeduction = (attendAlw / 25) * noPay; // Pro-rata
-                if (allowanceDeduction > attendAlw) allowanceDeduction = attendAlw;
-            }
+            let bonusLoss = noPay > 0 ? attendBon : 0;
+            let allowanceLoss = noPay > 0 ? (attendAlw / 25) * noPay : 0;
+            if (allowanceLoss > attendAlw) allowanceLoss = attendAlw;
 
             const epf8 = basic * 0.08;
-            const epf12 = basic * 0.12;
-            const etf3 = basic * 0.03;
-
             const gross = basic + attendAlw + attendBon + transport + house + medical + col + tech;
-            const net = gross - epf8 - bonusDeduction - allowanceDeduction - advance;
+            const net = gross - epf8 - bonusLoss - allowanceLoss - advance;
 
-            // UI
             document.getElementById('paySlip').classList.remove('hidden');
             document.getElementById('outName').innerText = name;
             document.getElementById('signName').innerText = name;
             document.getElementById('outMonth').innerText = `${salaryMonthName} 2026`;
 
             document.getElementById('earningsBody').innerHTML = `
-                <tr class="border-b border-gray-300">
-                    <td class="p-2 border-r border-gray-800">Basic Salary (40%)</td>
-                    <td class="p-2 text-right font-bold">${basic.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
-                </tr>
-                <tr class="border-b border-gray-300">
-                    <td class="p-2 border-r border-gray-800">Attendance Allowance (5%)</td>
-                    <td class="p-2 text-right">${attendAlw.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
-                </tr>
-                <tr class="border-b border-gray-300">
-                    <td class="p-2 border-r border-gray-800">Attendance Bonus (10%)</td>
-                    <td class="p-2 text-right">${attendBon.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
-                </tr>
-                <tr class="border-b border-gray-300">
-                    <td class="p-2 border-r border-gray-800">Transport Allowance (15%)</td>
-                    <td class="p-2 text-right">${transport.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
-                </tr>
-                <tr class="border-b border-gray-300">
-                    <td class="p-2 border-r border-gray-800">House/Accommodation Allowance (10%)</td>
-                    <td class="p-2 text-right">${house.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
-                </tr>
-                <tr class="border-b border-gray-300">
-                    <td class="p-2 border-r border-gray-800">Medical Expenses (10%)</td>
-                    <td class="p-2 text-right">${medical.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
-                </tr>
-                <tr class="border-b border-gray-300">
-                    <td class="p-2 border-r border-gray-800">Cost of Living (5%)</td>
-                    <td class="p-2 text-right">${col.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
-                </tr>
-                <tr>
-                    <td class="p-2 border-r border-gray-800">Technical Equipment Allowance (5%)</td>
-                    <td class="p-2 text-right">${tech.toLocaleString('en-US',{minimumFractionDigits:2})}</td>
-                </tr>
+                <tr class="border-b border-gray-300"><td class="p-2 border-r border-gray-800">Basic Salary (40%)</td><td class="p-2 text-right font-bold">${basic.toLocaleString('en-US',{minimumFractionDigits:2})}</td></tr>
+                <tr class="border-b border-gray-300"><td class="p-2 border-r border-gray-800">Attendance Allowance (5%)</td><td class="p-2 text-right">${attendAlw.toLocaleString('en-US',{minimumFractionDigits:2})}</td></tr>
+                <tr class="border-b border-gray-300"><td class="p-2 border-r border-gray-800">Attendance Bonus (10%)</td><td class="p-2 text-right">${attendBon.toLocaleString('en-US',{minimumFractionDigits:2})}</td></tr>
+                <tr class="border-b border-gray-300"><td class="p-2 border-r border-gray-800">Transport Allowance (15%)</td><td class="p-2 text-right">${transport.toLocaleString('en-US',{minimumFractionDigits:2})}</td></tr>
+                <tr class="border-b border-gray-300"><td class="p-2 border-r border-gray-800">House Allowance (10%)</td><td class="p-2 text-right">${house.toLocaleString('en-US',{minimumFractionDigits:2})}</td></tr>
+                <tr class="border-b border-gray-300"><td class="p-2 border-r border-gray-800">Medical Expenses (10%)</td><td class="p-2 text-right">${medical.toLocaleString('en-US',{minimumFractionDigits:2})}</td></tr>
+                <tr class="border-b border-gray-300"><td class="p-2 border-r border-gray-800">Cost of Living (5%)</td><td class="p-2 text-right">${col.toLocaleString('en-US',{minimumFractionDigits:2})}</td></tr>
+                <tr><td class="p-2 border-r border-gray-800">Tech Allowance (5%)</td><td class="p-2 text-right">${tech.toLocaleString('en-US',{minimumFractionDigits:2})}</td></tr>
             `;
-
-            document.getElementById('grossSalary').innerText = gross.toLocaleString('en-US', {minimumFractionDigits:2});
 
             document.getElementById('deductionsBody').innerHTML = `
                 <tr class="border-b border-gray-200"><td>EPF - 8% (Employee)</td><td class="text-right">${epf8.toLocaleString('en-US',{minimumFractionDigits:2})}</td></tr>
-                <tr class="border-b border-gray-200"><td>EPF - 12%</td><td class="text-right">${epf12.toLocaleString('en-US',{minimumFractionDigits:2})}</td></tr>
-                <tr class="border-b border-gray-200"><td>ETF - 3%</td><td class="text-right">${etf3.toLocaleString('en-US',{minimumFractionDigits:2})}</td></tr>
-                <tr class="border-b border-gray-200"><td>Tax</td><td class="text-right">0.00</td></tr>
                 <tr class="border-b border-gray-200 font-bold text-blue-700"><td>Advance Payment</td><td class="text-right">(${advance.toLocaleString('en-US',{minimumFractionDigits:2})})</td></tr>
                 ${noPay > 0 ? `
-                <tr class="border-b border-gray-200 text-red-600 font-bold"><td>Bonus Forfeited (No-Pay Penalty)</td><td class="text-right">(${bonusDeduction.toLocaleString('en-US',{minimumFractionDigits:2})})</td></tr>
-                <tr class="text-red-600 font-medium italic"><td>Attendance Allowance Deduction (${noPay} days)</td><td class="text-right">(${allowanceDeduction.toLocaleString('en-US',{minimumFractionDigits:2})})</td></tr>
+                <tr class="border-b border-gray-200 text-red-600 font-bold"><td>Bonus Forfeited</td><td class="text-right">(${bonusLoss.toLocaleString('en-US',{minimumFractionDigits:2})})</td></tr>
+                <tr class="text-red-600 italic"><td>Attendance Deduction (${noPay} days)</td><td class="text-right">(${allowanceLoss.toLocaleString('en-US',{minimumFractionDigits:2})})</td></tr>
                 ` : ''}
             `;
-            
+
+            document.getElementById('grossSalary').innerText = gross.toLocaleString('en-US', {minimumFractionDigits:2});
             document.getElementById('netSalaryDisplay').innerText = `LKR ${net.toLocaleString('en-US', {minimumFractionDigits:2})}`;
-            window.scrollTo({ top: document.getElementById('paySlip').offsetTop, behavior: 'smooth' });
+            
+            // Scroll to view
+            setTimeout(() => {
+                document.getElementById('paySlip').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        }
+
+        async function downloadPDF() {
+            const element = document.getElementById('pdfContent');
+            const empName = document.getElementById('outName').innerText;
+            const month = document.getElementById('outMonth').innerText;
+            
+            // Configuration to fit A4 perfectly
+            const opt = {
+                margin: 0,
+                filename: `PaySlip_${empName}_${month}.pdf`,
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { 
+                    scale: 3, // High quality
+                    useCORS: true, 
+                    letterRendering: true,
+                    scrollX: 0,
+                    scrollY: 0
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            try {
+                // Ensure content is fully rendered before capturing
+                await html2pdf().set(opt).from(element).save();
+            } catch (error) {
+                console.error("PDF Export failed:", error);
+                alert("Failed to generate PDF. Please try again.");
+            }
         }
     </script>
 </body>
